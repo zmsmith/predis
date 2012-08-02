@@ -11,10 +11,13 @@ class PredisMeta(type):
             orig = getattr(super(Predis, self), name)
             call_args = inspect.getcallargs(orig, *args, **kwargs)
             for k, v in call_args.iteritems():
+                if v is self:
+                    obj_name = k
+                    continue
                 trans = getattr(self, "_{}__transform__{}".format(self.__class__.__name__, k), None)
                 if trans:
                     call_args[k] = trans(v)
-            call_args.pop('self')
+            call_args.pop(obj_name)
             return orig(**call_args)
         f.__name__ = name
         return f
@@ -143,4 +146,7 @@ class Predis(StrictRedis):
         return [self.__add_prefix(key) for key in keys]
 
     def __transform__dest(self, value):
+        return self.__add_prefix(value)
+
+    def __transform__src(self, value):
         return self.__add_prefix(value)
