@@ -4,6 +4,7 @@ Predis: Automatic Key Prefixing Redis Client
 Usage
 
 ::
+
     >>> from predis import Predis
     >>> conn = Predis(prefix="foo")
     >>> conn.set("bar", "baz")
