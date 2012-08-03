@@ -18,3 +18,10 @@ class TestPredis(object):
     def test_get(self):
         self.redis.set("test:foo", "bar")
         assert self.predis.get("foo") == "bar"
+
+    def test_sunionstore(self):
+        self.redis.sadd("test:foo", "bar")
+        self.redis.sadd("test:boo", "bat")
+        self.redis.sadd("test:goo", "bak")
+        self.predis.sunionstore("blah", ["foo", "boo"], "goo")
+        assert self.redis.smembers("test:blah") == set(["bar", "bat", "bak"])
