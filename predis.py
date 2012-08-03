@@ -8,19 +8,36 @@ class PredisMeta(type):
     @staticmethod
     def fucking_awesome_factory(name):
         def f(self, *_args, **_kwargs):
+            # get underlying method from StrictRedis
             orig = getattr(super(Predis, self), name)
+
+            # `parsed_args` is a dictionary of (parameter name, value) pairs of
+            # of how `orig` would interpret `*args` and `**kwargs`
             parsed_args = inspect.getcallargs(orig, *_args, **_kwargs)
+
+            # Loop through the parsed arguments and transform the arguments we
+            # know represent redis keys
             for key, value in parsed_args.iteritems():
+
+                # Grab the name of the variable already bound to the method when we
+                # call it later. `obj_name` will be self in pretty much every instance,
+                # but hardcoding in the string is lame
                 if value is self:
                     obj_name = key
                     continue
+
                 trans = getattr(self, "_{}__transform__{}".format(self.__class__.__name__, key), None)
                 if trans:
                     parsed_args[key] = trans(value)
+            # get the argument names so we can reconstruct out parameters
             args_spec, varargs_spec, keywords = inspect.getargs(orig.func_code)
+            # put requried positional arguments in the correct positions
             args = [parsed_args.get(a) for a in args_spec if a is not obj_name]
+            # extend with varargs variable so it can be passed in with * syntnax
             args.extend(parsed_args.get(varargs_spec, []))
+            # get the dictionary to be passed in with **syntax
             kwargs = parsed_args.get(keywords, {})
+            # call the motherfucker
             return orig(*args, **kwargs)
         f.__name__ = name
         return f
