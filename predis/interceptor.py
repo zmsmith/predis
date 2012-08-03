@@ -2,6 +2,19 @@ import inspect
 
 
 class Interceptor(object):
+    """
+    >>> def add(x, y):
+    ...   return x + y
+    ...
+    >>> intercepted = Interceptor(func, 1, 2)
+    >>> intercepted['x']
+    1
+    >>> intercepted['y']
+    2
+    >>> intercepted['y'] = 3
+    >>> intercepted()
+    4
+    """
 
     def __init__(self, func, *args, **kwargs):
         self.func = func
