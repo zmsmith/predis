@@ -6,7 +6,7 @@ class Interceptor(object):
     >>> def add(x, y):
     ...   return x + y
     ...
-    >>> intercepted = Interceptor(func, 1, 2)
+    >>> intercepted = Interceptor(add, 1, 2)
     >>> intercepted['x']
     1
     >>> intercepted['y']
