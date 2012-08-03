@@ -7,18 +7,21 @@ class PredisMeta(type):
 
     @staticmethod
     def fucking_awesome_factory(name):
-        def f(self, *args, **kwargs):
+        def f(self, *_args, **_kwargs):
             orig = getattr(super(Predis, self), name)
-            call_args = inspect.getcallargs(orig, *args, **kwargs)
-            for k, v in call_args.iteritems():
-                if v is self:
-                    obj_name = k
+            parsed_args = inspect.getcallargs(orig, *_args, **_kwargs)
+            for key, value in parsed_args.iteritems():
+                if value is self:
+                    obj_name = key
                     continue
-                trans = getattr(self, "_{}__transform__{}".format(self.__class__.__name__, k), None)
+                trans = getattr(self, "_{}__transform__{}".format(self.__class__.__name__, key), None)
                 if trans:
-                    call_args[k] = trans(v)
-            call_args.pop(obj_name)
-            return orig(**call_args)
+                    parsed_args[key] = trans(value)
+            args_spec, varargs_spec, keywords = inspect.getargs(orig.func_code)
+            args = [parsed_args.get(a) for a in args_spec if a is not obj_name]
+            args.extend(parsed_args.get(varargs_spec, []))
+            kwargs = parsed_args.get(keywords, {})
+            return orig(*args, **kwargs)
         f.__name__ = name
         return f
 
