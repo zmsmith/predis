@@ -1,4 +1,4 @@
-from predis.interceptor import interceptor
+from interceptor import interceptor
 from redis import StrictRedis
 
 
